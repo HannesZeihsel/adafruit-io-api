@@ -56,6 +56,9 @@ If you want to make use of the unit tests in this project (because you want to u
 	 public static readonly string FeedName = "___Your Feed Name___";
 Find out more about this at https://io.adafruit.com/api/docs/#authentication 
 
+Rename the class and the File to AdafruitIOAccountData. This file will then be used to get the account credentials. Be careful to not upload this file with sensitive data (The file was added to the .gitignore list, but make sure that you do get the name right when renaming and check that it is not in the 'Changes' List)
+(Unfortunately i could not reuse the same file as a file tracked by git cannot (easily) be untracked again, so I had to use this methode.)
+
 ## Intended Design
 The design I currently try to archive is that I provide some simple implementation for each API command of the Adafruit IO API in its respective namespaces MQTT and HTTP. And then to provide even more abstraction in a combined "Top Level" representation of I .e.. feeds, that then enables the user to create new feeds, etc. with HTTP and implement triggers for new values, etc. with MQTT.
 	
