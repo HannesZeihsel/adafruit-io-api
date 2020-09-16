@@ -1,37 +1,5 @@
-## Welcome to GitHub Pages
+## Adafruit IO API .Net Library
 
-You can use the [editor on GitHub](https://github.com/HannesZeihsel/adafruit-io-api/edit/gh-pages/index.md) to maintain and preview the content for your website in Markdown files.
+This Library is intended to be used to provide easy access to your Adafruit IO Data. All the API functionality is exposed to be used easily. Additional abstraction is made, to provide an easy way to get the data you want into your Adafruit IO Feed and also back out of it. It is stored as .Json, so this can easily be used if other applications that are not using this library are accessing your feeds. See also [here](https://github.com/HannesZeihsel/adafruit-io-api).
 
-Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
-
-### Markdown
-
-Markdown is a lightweight and easy-to-use syntax for styling your writing. It includes conventions for
-
-```markdown
-Syntax highlighted code block
-
-# Header 1
-## Header 2
-### Header 3
-
-- Bulleted
-- List
-
-1. Numbered
-2. List
-
-**Bold** and _Italic_ and `Code` text
-
-[Link](url) and ![Image](src)
-```
-
-For more details see [GitHub Flavored Markdown](https://guides.github.com/features/mastering-markdown/).
-
-### Jekyll Themes
-
-Your Pages site will use the layout and styles from the Jekyll theme you have selected in your [repository settings](https://github.com/HannesZeihsel/adafruit-io-api/settings). The name of this theme is saved in the Jekyll `_config.yml` configuration file.
-
-### Support or Contact
-
-Having trouble with Pages? Check out our [documentation](https://docs.github.com/categories/github-pages-basics/) or [contact support](https://github.com/contact) and we’ll help you sort it out.
+###Todo More info
