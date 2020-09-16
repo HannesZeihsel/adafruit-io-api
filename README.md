@@ -11,9 +11,6 @@ This Library is intended to be used to provide easy access to your Adafruit IO D
 ### Features 
 Currently, the following features are supported:
 
-In branch `Main`:
-
-In branch `Development`:
 - Add data of type string to the feed
 - Add data of generic type to the feed
 - Get string data from the feed
