@@ -14,6 +14,11 @@ Currently, the following features are supported:
 In branch `Main`:
 
 In branch `Development`:
+- Add data of type string to the feed
+- Add data of generic type to the feed
+- Get string data from the feed
+- Get generic data from the feed
+- Get the most recent datapoint from the feed
 
 ## <a name="HowToUse"></a> How to Use
 ### Setup
