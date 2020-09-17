@@ -102,6 +102,27 @@ namespace AdafruitIOApi
         /// Returns all the datapoints from Adafruit IO in the given feed <paramref name="feed"/> which
         /// adhere to the given additional constrains if any.
         /// </summary>
+        /// <param name="feed">The name of the feed (of the Adafruit IO account this Client is
+        /// communicating with) from which the data schould be retrieved.</param>
+        /// <param name="timeInterval">The time interval that the data schould be created in.</param>
+        /// <param name="limit">The limit of the number datapoints that schould be returned</param>
+        /// <param name="include">The metadata that schould be included in the datapoints.</param>
+        /// <param name="before">TODO: check meaning of this parameter.</param>
+        /// <returns>A List of <see cref="DataPoint{T}"/> with <code>T=string</code>with the retrieved data.</returns>
+        public async Task<List<DataPoint<string>>> GetDataAsync(string feed,
+               TimeInterval timeInterval = null,
+               int? limit = null,
+               IncludeData? include = null,
+               string before = null)
+        {
+            return await GetDataAsync<string>(feed, timeInterval, limit, include, before);
+        }
+
+        /// <summary>
+        /// Warning: Pagination not yet supported.
+        /// Returns all the datapoints from Adafruit IO in the given feed <paramref name="feed"/> which
+        /// adhere to the given additional constrains if any.
+        /// </summary>
         /// <typeparam name="T">The expected type of the data's value.</typeparam>
         /// <param name="feed">The name of the feed (of the Adafruit IO account this Client is
         /// communicating with) from which the data schould be retrieved.</param>
@@ -111,10 +132,10 @@ namespace AdafruitIOApi
         /// <param name="before">TODO: check meaning of this parameter.</param>
         /// <returns>A List of <see cref="DataPoint{T}"/> with the retrieved data.</returns>
         public async Task<List<DataPoint<T>>> GetDataAsync<T>(string feed, 
-                TimeInterval timeInterval = null, 
-                int? limit = null, 
-                IncludeData? include = null, 
-                string before= null)
+            TimeInterval timeInterval = null, 
+            int? limit = null, 
+            IncludeData? include = null, 
+            string before= null)
         {
             //setup query parameters if those are provided
             var queryParameters = HttpUtility.ParseQueryString(string.Empty);

@@ -1,5 +1,4 @@
 using AdafruitIOApi;
-using AdafruitIOApi.Exceptions;
 using AdafruitIOApi.Parameters;
 using AdafruitIOApi.Results;
 using AdafruitIOApiHttpTest;
@@ -18,35 +17,8 @@ namespace AdafruitIOApiTest
         [TestMethod]
         public async System.Threading.Tasks.Task TestCreateDataAsync()
         {
-            AdafruitIOHttpClient client = new AdafruitIOHttpClient(AdafruitIOAccountData.AccountInvalidKey);
-
-            //wrong account key
-            //401
-            //{"error": "request failed - invalid API key provided"}
-            await Assert.ThrowsExceptionAsync<InvalidApiKeyException>(async () =>
-            {
-                await client.CreateDataAsync(AdafruitIOAccountData.FeedKeyValid, "testData");
-            });
-
-            client = new AdafruitIOHttpClient(AdafruitIOAccountData.AccountInvalidUsername);
-            //wrong username
-            //404
-            //{"error": "not found - that username does not exist"}
-            await Assert.ThrowsExceptionAsync<UsernameNotFoundException>(async () =>
-            {
-                await client.CreateDataAsync(AdafruitIOAccountData.FeedKeyValid, "testData");
-            });
-
-            client = new AdafruitIOHttpClient(AdafruitIOAccountData.AccountValid);
-            //wrong feed key
-            //404
-            //{"error":not found - API documentation can be found at https://io.adafruit.com/api/docs"}
-            await Assert.ThrowsExceptionAsync<GeneralNotFoundException>(async () =>
-            {
-                await client.CreateDataAsync(AdafruitIOAccountData.FeedKeyInvalid, "testData");
-            });
-
-            //correct Data
+            var client = new AdafruitIOHttpClient(AdafruitIOAccountData.AccountValid);
+            
             Datum<int?> datum = new Datum<int?>(12, 1, 2, 3, DateTime.Now);
             var dp = await client.CreateDataAsync<int?>(AdafruitIOAccountData.FeedKeyValid, datum);
 
