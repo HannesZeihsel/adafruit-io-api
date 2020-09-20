@@ -85,12 +85,12 @@ namespace AdafruitIOApi
                 {
                     Method = HttpMethod.Post,
                     RequestUri = new Uri($"https://io.adafruit.com/api/v2/{account.Username}/feeds/{feed}/data"),
-                    Content = new StringContent(datum.GetJson(), Encoding.UTF8, "application/json")
+                    Content = new StringContent(JsonConvert.SerializeObject(datum), Encoding.UTF8, "application/json")
                 };
 
                 var response = await Client.PostAsync(request.RequestUri, request.Content);
                 await RaiseErrorIfHttpResponseErrorAsync(response, feed);
-                return DataPoint<T>.GenerateFromJson(await response.Content.ReadAsStringAsync());
+                return JsonConvert.DeserializeObject<DataPoint<T>>(await response.Content.ReadAsStringAsync());
             }
             catch (Exception e) when (e is InvalidOperationException || e is HttpRequestException || e is TaskCanceledException)
             {
@@ -164,18 +164,7 @@ namespace AdafruitIOApi
                 
                 var response = await Client.GetAsync(request.RequestUri);
                 await RaiseErrorIfHttpResponseErrorAsync(response, feed);
-                if (typeof(T) == typeof(string))
-                    return JsonConvert.DeserializeObject<List<DataPoint<T>>>(await response.Content.ReadAsStringAsync());
-                else
-                {
-                    var retS = JsonConvert.DeserializeObject<List<DataPoint<string>>>(await response.Content.ReadAsStringAsync());
-                    var retT = new List<DataPoint<T>>();
-                    foreach (var dp in retS)
-                    {
-                        retT.Add(dp.ConvertTo<T>());
-                    }
-                    return retT;
-                }
+                return JsonConvert.DeserializeObject<List<DataPoint<T>>>(await response.Content.ReadAsStringAsync());
             }
             catch (Exception e) when (e is InvalidOperationException || e is HttpRequestException || e is TaskCanceledException)
             {
@@ -230,8 +219,8 @@ namespace AdafruitIOApi
 
         public async Task<List<DataPoint<T>>> CreateMultipleDataRecordsAsync<T>(string feed, List<Datum<T>> data)
         {
-            List<string> dataString = new List<string>();
-            data.ForEach((d) => dataString.Add(d.GetJson()));
+            string dataString = JsonConvert.SerializeObject(data);
+
             try
             {
                 var request = new HttpRequestMessage()
@@ -244,10 +233,7 @@ namespace AdafruitIOApi
                 var response = await Client.PostAsync(request.RequestUri, request.Content);
                 await RaiseErrorIfHttpResponseErrorAsync(response, feed);
 
-                List<DataPoint<string>> retDataString = JsonConvert.DeserializeObject<List<DataPoint<string>>>(await response.Content.ReadAsStringAsync());
-                List<DataPoint<T>> retData = new List<DataPoint<T>>();
-                retDataString.ForEach((d) => retData.Add(d.ConvertTo<T>()));
-                return retData;
+                return JsonConvert.DeserializeObject<List<DataPoint<T>>>(await response.Content.ReadAsStringAsync());
             }
             catch (Exception e) when (e is InvalidOperationException || e is HttpRequestException || e is TaskCanceledException)
             {
@@ -278,8 +264,7 @@ namespace AdafruitIOApi
                     return JsonConvert.DeserializeObject<DataPoint<T>>(await response.Content.ReadAsStringAsync());
                 else
                 {
-                    var retS = JsonConvert.DeserializeObject<DataPoint<string>>(await response.Content.ReadAsStringAsync());
-                    return retS.ConvertTo<T>();
+                    return JsonConvert.DeserializeObject<DataPoint<T>>(await response.Content.ReadAsStringAsync());
                 }
             }
             catch (Exception e) when (e is InvalidOperationException || e is HttpRequestException || e is TaskCanceledException)
