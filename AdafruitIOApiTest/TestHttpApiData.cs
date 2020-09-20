@@ -1,9 +1,11 @@
 using AdafruitIOApi;
+using AdafruitIOApi.Http.Parameters;
 using AdafruitIOApi.Parameters;
 using AdafruitIOApi.Results;
 using AdafruitIOApiHttpTest;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
+using System.Threading.Tasks;
 
 namespace AdafruitIOApiTest
 {
@@ -15,7 +17,7 @@ namespace AdafruitIOApiTest
         //todo check behaivoug if feed is null or empty
 
         [TestMethod]
-        public async System.Threading.Tasks.Task TestCreateDataAsync()
+        public async Task TestCreateDataAsync()
         {
             var client = new AdafruitIOHttpClient(AdafruitIOAccountData.AccountValid);
             
@@ -56,7 +58,7 @@ namespace AdafruitIOApiTest
         }
 
         [TestMethod]
-        public async System.Threading.Tasks.Task TestGetDataAsync()
+        public async Task TestGetDataAsync()
         {
             AdafruitIOHttpClient client = new AdafruitIOHttpClient(AdafruitIOAccountData.AccountValid);
 
@@ -80,6 +82,21 @@ namespace AdafruitIOApiTest
             Assert.IsTrue(ans.Count <= 12);
 
             //todo check result if no data is available.
+        }
+
+        [TestMethod]
+        public async Task TestChartFeedData()
+        {
+            AdafruitIOHttpClient client = new AdafruitIOHttpClient(AdafruitIOAccountData.AccountValid);
+
+            var ans = await client.ChartFeedDataAsync(AdafruitIOAccountData.FeedKeyValid);
+            Assert.IsTrue(ans != null);
+
+            ans = await client.ChartFeedDataAsync(AdafruitIOAccountData.FeedKeyValid, new TimeInterval(DateTime.Now, TimeSpan.FromHours(2)), Resolution.OneMinute, null, AggregateField.Max, true);
+            Assert.IsTrue(ans != null);
+
+            ans = await client.ChartFeedDataAsync(AdafruitIOAccountData.FeedKeyValid, new TimeInterval(DateTime.Now, TimeSpan.FromHours(2)), Resolution.OneMinute, 2, AggregateField.Max, false);
+            Assert.IsTrue(ans != null);
         }
     }
 }

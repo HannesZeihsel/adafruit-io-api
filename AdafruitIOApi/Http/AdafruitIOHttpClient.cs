@@ -1,4 +1,6 @@
 ﻿using AdafruitIOApi.Exceptions;
+using AdafruitIOApi.Http.Parameters;
+using AdafruitIOApi.Http.Results;
 using AdafruitIOApi.Parameters;
 using AdafruitIOApi.Results;
 using Newtonsoft.Json;
@@ -32,6 +34,7 @@ namespace AdafruitIOApi
         public AdafruitIOHttpClient(AdafruitIOAccount account) {
             this.account = account ?? throw new ArgumentNullException(nameof(account));
             Client = new HttpClient();
+            Client.DefaultRequestHeaders.Add(HeaderNameApiKey, account.Key);
             Client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
         }
 
@@ -85,7 +88,6 @@ namespace AdafruitIOApi
                     Content = new StringContent(datum.GetJson(), Encoding.UTF8, "application/json")
                 };
 
-                request.Content.Headers.Add(HeaderNameApiKey, account.Key);
                 var response = await Client.PostAsync(request.RequestUri, request.Content);
                 await RaiseErrorIfHttpResponseErrorAsync(response, feed);
                 return DataPoint<T>.GenerateFromJson(await response.Content.ReadAsStringAsync());
@@ -97,6 +99,7 @@ namespace AdafruitIOApi
             catch (Exception e) { throw e; }
         }
 
+        
         /// <summary>
         /// Warning: Pagination not yet supported.
         /// Returns all the datapoints from Adafruit IO in the given feed <paramref name="feed"/> which
@@ -158,8 +161,7 @@ namespace AdafruitIOApi
                     Method = HttpMethod.Get,
                     RequestUri = new Uri($"https://io.adafruit.com/api/v2/{account.Username}/feeds/{feed}/data{queryParameterString}")
                 };
-                //request.Headers.Add("X-AIO-Key", feed.AdafruitIOAccount.Key);
-                Client.DefaultRequestHeaders.Add(HeaderNameApiKey, account.Key);
+                
                 var response = await Client.GetAsync(request.RequestUri);
                 await RaiseErrorIfHttpResponseErrorAsync(response, feed);
                 if (typeof(T) == typeof(string))
@@ -180,51 +182,138 @@ namespace AdafruitIOApi
                 throw new ConnectionException("Exception in http request.", e);
             }
             catch (Exception e) { throw e; }
-            finally
-            {
-                Client.DefaultRequestHeaders.Remove(HeaderNameApiKey);
-            }
         }
 
-        /*public string ChartFeedData(string feed, 
+        public async Task<ChartData> ChartFeedDataAsync(string feed, 
             TimeInterval timeInterval = null,
-            int? resolution = null,
+            Resolution? resolution = null,
             int? hours = null,
-            string field = null,
+            AggregateField? field = null,
             bool? raw = null)
         {
-            throw new NotImplementedException();
+            //setup query parameters if those are provided
+            var queryParameters = HttpUtility.ParseQueryString(string.Empty);
+            if (!(timeInterval?.StartTime is null))
+                queryParameters["start_time"] = timeInterval.StartTime.ToString("s"); //todo check if format is correct
+            if (!(timeInterval?.EndTime is null))
+                queryParameters["end_time"] = timeInterval.EndTime.ToString("s"); // todo check if format is correct
+            if (!(resolution is null))
+                queryParameters["resolution"] = ((int)resolution).ToString();
+            if (!(hours is null))
+                queryParameters["hours"] = hours.Value.ToString();
+            if (!(field is null))
+                queryParameters["field"] = field.Value.GetDataText();
+            if (!(raw is null))
+                queryParameters["raw"] = raw.Value ? "true" : "false";
+            string queryParameterString = queryParameters.Count <= 0 ? "" : "?" + queryParameters.ToString();
+
+            try
+            {
+                var request = new HttpRequestMessage()
+                {
+                    Method = HttpMethod.Get,
+                    RequestUri = new Uri($"https://io.adafruit.com/api/v2/{account.Username}/feeds/{feed}/data/chart{queryParameterString}")
+                };
+                
+                var response = await Client.GetAsync(request.RequestUri);
+                await RaiseErrorIfHttpResponseErrorAsync(response, feed);
+                //todo make return type more accurate and maybe incoorporate into existing types [Maybe delete TimeInterval?]
+                //todo check Json deserialize setting to make it easier and prevent conversion from string to type T
+                return JsonConvert.DeserializeObject<ChartData>(await response.Content.ReadAsStringAsync());
+            }
+            catch (Exception e) when (e is InvalidOperationException || e is HttpRequestException || e is TaskCanceledException)
+            {
+                throw new ConnectionException("Exception in http request.", e);
+            }
+            catch (Exception e) { throw e; }
         }
 
-        public string CreateMultipleDataRecords(string feed, string[] data)
+        public async Task<List<DataPoint<T>>> CreateMultipleDataRecordsAsync<T>(string feed, List<Datum<T>> data)
         {
-            throw new NotImplementedException();
+            List<string> dataString = new List<string>();
+            data.ForEach((d) => dataString.Add(d.GetJson()));
+            try
+            {
+                var request = new HttpRequestMessage()
+                {
+                    Method = HttpMethod.Post,
+                    RequestUri = new Uri($"https://io.adafruit.com/api/v2/{account.Username}/feeds/{feed}/data"),
+                    Content = new StringContent(JsonConvert.SerializeObject(dataString), Encoding.UTF8, "application/json")
+                };
+
+                var response = await Client.PostAsync(request.RequestUri, request.Content);
+                await RaiseErrorIfHttpResponseErrorAsync(response, feed);
+
+                List<DataPoint<string>> retDataString = JsonConvert.DeserializeObject<List<DataPoint<string>>>(await response.Content.ReadAsStringAsync());
+                List<DataPoint<T>> retData = new List<DataPoint<T>>();
+                retDataString.ForEach((d) => retData.Add(d.ConvertTo<T>()));
+                return retData;
+            }
+            catch (Exception e) when (e is InvalidOperationException || e is HttpRequestException || e is TaskCanceledException)
+            {
+                throw new ConnectionException("Exception in http request.", e);
+            }
+            catch (Exception e) { throw e; }
         }
 
-        public string CreateMultipleDataRecords(string feed, string data)
+        private async Task<DataPoint<T>> GetSpecialDataAsync<T>(string feed, string special,  IncludeData? include = null)
         {
-            throw new NotImplementedException();
+            //setup query parameters if those are provided
+            var queryParameters = HttpUtility.ParseQueryString(string.Empty);
+            if (!(include is null))
+                queryParameters["include"] = include.Value.GetDataText();
+            string queryParameterString = queryParameters.Count <= 0 ? "" : "?" + queryParameters.ToString();
+
+            try
+            {
+                var request = new HttpRequestMessage()
+                {
+                    Method = HttpMethod.Get,
+                    RequestUri = new Uri($"https://io.adafruit.com/api/v2/{account.Username}/feeds/{feed}/data/{special}/{queryParameterString}")
+                };
+
+                var response = await Client.GetAsync(request.RequestUri);
+                await RaiseErrorIfHttpResponseErrorAsync(response, feed);
+                if (typeof(T) == typeof(string))
+                    return JsonConvert.DeserializeObject<DataPoint<T>>(await response.Content.ReadAsStringAsync());
+                else
+                {
+                    var retS = JsonConvert.DeserializeObject<DataPoint<string>>(await response.Content.ReadAsStringAsync());
+                    return retS.ConvertTo<T>();
+                }
+            }
+            catch (Exception e) when (e is InvalidOperationException || e is HttpRequestException || e is TaskCanceledException)
+            {
+                throw new ConnectionException("Exception in http request.", e);
+            }
+            catch (Exception e) { throw e; }
         }
 
-        public string GetPreviousData(string feed, IncludeData? includeData = null)
+
+        public async Task<DataPoint<T>> GetPreviousDataAsync<T>(string feed, IncludeData? include = null)
         {
-            throw new NotImplementedException();
+            return await GetSpecialDataAsync<T>(feed, "previous", include);
         }
 
-        public string GetNextData(string feed, IncludeData? includeData = null)
+        public async Task<DataPoint<T>> GetNextDataAsync<T>(string feed, IncludeData? include = null)
         {
-            throw new NotImplementedException();
+            return await GetSpecialDataAsync<T>(feed, "next", include);
         }
 
-        public string GetLastData(string feed, IncludeData? includeData = null)
+        public async Task<DataPoint<T>> GetLastDataAsync<T>(string feed, IncludeData? include = null)
         {
-            throw new NotImplementedException();
+            return await GetSpecialDataAsync<T>(feed, "last", include);
         }
 
-        public string GetFirstsData(string feed, IncludeData? includeData = null)
+        public async Task<DataPoint<T>> GetFirstDataAsync<T>(string feed, IncludeData? include = null)
         {
-            throw new NotImplementedException();
-        }*/
+            return await GetSpecialDataAsync<T>(feed, "first", include);
+        }
+
+        public async Task<DataPoint<T>> GetDataPointAsync<T>(string feed, string id, IncludeData? include = null)
+        {
+            return await GetSpecialDataAsync<T>(feed, id, include);
+        }
 
         /// <summary>
         /// Gets the most recent datapoint.
@@ -239,11 +328,6 @@ namespace AdafruitIOApi
         }
 
         /*public string GetMostRecentData(string feed)
-        {
-            throw new NotImplementedException();
-        }
-
-        public string GetDataPoint(string feed, string id, IncludeData? includeData = null)
         {
             throw new NotImplementedException();
         }
