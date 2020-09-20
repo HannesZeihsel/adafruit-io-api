@@ -32,6 +32,7 @@ namespace AdafruitIOApi.Parameters
         [JsonProperty("created_at")]
         public DateTime? CreatedAt { get; set; }
 
+
         //todo
         /// <summary>
         /// Constructor to construct new instance of <see cref="Datum{T}"/> from a serialized version. This deserializes Value 

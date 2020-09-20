@@ -64,11 +64,11 @@ namespace AdafruitIOApiTest
 
             var ans = await client.GetDataAsync<string>(AdafruitIOAccountData.FeedKeyValid);
             Assert.IsTrue(ans != null);
-
-            TimeInterval timeInterval = new TimeInterval(DateTime.Now - TimeSpan.FromHours(1), DateTime.Now);
-            ans = await client.GetDataAsync<string>(AdafruitIOAccountData.FeedKeyValid, timeInterval);
+            DateTime startTime = DateTime.Now - TimeSpan.FromHours(1);
+            DateTime endTime = DateTime.Now;
+            ans = await client.GetDataAsync<string>(AdafruitIOAccountData.FeedKeyValid, startTime, endTime);
             Assert.IsTrue(ans != null);
-            Assert.IsTrue(ans.TrueForAll((d) => timeInterval.Contains(d.CreatedAt.Value)));
+            Assert.IsTrue(ans.TrueForAll((d) => d.CreatedAt.Value>=startTime && d.CreatedAt.Value<=endTime));
 
             //todo check json deserialisation if value is not supplied
             IncludeData includeData = new IncludeData();
@@ -92,10 +92,10 @@ namespace AdafruitIOApiTest
             var ans = await client.ChartFeedDataAsync(AdafruitIOAccountData.FeedKeyValid);
             Assert.IsTrue(ans != null);
 
-            ans = await client.ChartFeedDataAsync(AdafruitIOAccountData.FeedKeyValid, new TimeInterval(DateTime.Now, TimeSpan.FromHours(2)), Resolution.OneMinute, null, AggregateField.Max, true);
+            ans = await client.ChartFeedDataAsync(AdafruitIOAccountData.FeedKeyValid, DateTime.Now, DateTime.Now+ TimeSpan.FromHours(2), Resolution.OneMinute, null, AggregateField.Max, true);
             Assert.IsTrue(ans != null);
 
-            ans = await client.ChartFeedDataAsync(AdafruitIOAccountData.FeedKeyValid, new TimeInterval(DateTime.Now, TimeSpan.FromHours(2)), Resolution.OneMinute, 2, AggregateField.Max, false);
+            ans = await client.ChartFeedDataAsync(AdafruitIOAccountData.FeedKeyValid, DateTime.Now, DateTime.Now + TimeSpan.FromHours(2), Resolution.OneMinute, 2, AggregateField.Max, false);
             Assert.IsTrue(ans != null);
         }
     }

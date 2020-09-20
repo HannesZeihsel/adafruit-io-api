@@ -113,12 +113,13 @@ namespace AdafruitIOApi
         /// <param name="before">TODO: check meaning of this parameter.</param>
         /// <returns>A List of <see cref="DataPoint{T}"/> with <code>T=string</code>with the retrieved data.</returns>
         public async Task<List<DataPoint<string>>> GetDataAsync(string feed,
-               TimeInterval timeInterval = null,
+               DateTime? startTime = null,
+               DateTime? endTime = null,
                int? limit = null,
                IncludeData? include = null,
                string before = null)
         {
-            return await GetDataAsync<string>(feed, timeInterval, limit, include, before);
+            return await GetDataAsync<string>(feed, startTime, endTime, limit, include, before);
         }
 
         /// <summary>
@@ -135,17 +136,18 @@ namespace AdafruitIOApi
         /// <param name="before">TODO: check meaning of this parameter.</param>
         /// <returns>A List of <see cref="DataPoint{T}"/> with the retrieved data.</returns>
         public async Task<List<DataPoint<T>>> GetDataAsync<T>(string feed, 
-            TimeInterval timeInterval = null, 
+            DateTime? startTime= null, 
+            DateTime? endTime = null,
             int? limit = null, 
             IncludeData? include = null, 
             string before= null)
         {
             //setup query parameters if those are provided
             var queryParameters = HttpUtility.ParseQueryString(string.Empty);
-            if (!(timeInterval?.StartTime is null))
-                queryParameters["start_time"] = timeInterval.StartTime.ToString("s"); //todo check if format is correct
-            if (!(timeInterval?.EndTime is null))
-                queryParameters["end_time"] = timeInterval.EndTime.ToString("s"); // todo check if format is correct
+            if (!(startTime is null))
+                queryParameters["start_time"] = startTime.Value.ToString("s"); //todo check if format is correct
+            if (!(endTime is null))
+                queryParameters["end_time"] = endTime.Value.ToString("s"); // todo check if format is correct
             if (!(limit is null))
                 queryParameters["limit"] = limit.ToString();
             if (!(include is null))
@@ -174,7 +176,8 @@ namespace AdafruitIOApi
         }
 
         public async Task<ChartData> ChartFeedDataAsync(string feed, 
-            TimeInterval timeInterval = null,
+            DateTime? startTime = null,
+            DateTime? endTime = null,
             Resolution? resolution = null,
             int? hours = null,
             AggregateField? field = null,
@@ -182,10 +185,10 @@ namespace AdafruitIOApi
         {
             //setup query parameters if those are provided
             var queryParameters = HttpUtility.ParseQueryString(string.Empty);
-            if (!(timeInterval?.StartTime is null))
-                queryParameters["start_time"] = timeInterval.StartTime.ToString("s"); //todo check if format is correct
-            if (!(timeInterval?.EndTime is null))
-                queryParameters["end_time"] = timeInterval.EndTime.ToString("s"); // todo check if format is correct
+            if (!(startTime is null))
+                queryParameters["start_time"] = startTime.Value.ToString("s"); //todo check if format is correct
+            if (!(endTime is null))
+                queryParameters["end_time"] = endTime.Value.ToString("s"); // todo check if format is correct
             if (!(resolution is null))
                 queryParameters["resolution"] = ((int)resolution).ToString();
             if (!(hours is null))
