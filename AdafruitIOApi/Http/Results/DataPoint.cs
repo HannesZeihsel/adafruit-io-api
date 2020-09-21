@@ -1,6 +1,7 @@
 ﻿using AdafruitIOApi.Parameters;
 using Newtonsoft.Json;
 using System;
+using System.Runtime.Serialization;
 
 namespace AdafruitIOApi.Results
 {
@@ -9,7 +10,7 @@ namespace AdafruitIOApi.Results
     /// </summary>
     /// <typeparam name="T"></typeparam>
     [Serializable]
-    public class DataPoint<T> : Datum<T>
+    public class DataPoint<T> : Datum<T>, ISerializable
     {
         ///The ID of this datapoint as metadata of this datum.
         [JsonProperty("id")]
@@ -35,6 +36,23 @@ namespace AdafruitIOApi.Results
         [JsonProperty("expiration")]
         public DateTime Expiration { get; set; }
 
+
+        protected DataPoint(SerializationInfo info, StreamingContext context):base(info, context)
+        {
+            ID = this.Deserialize<string>(info, nameof(ID));
+            FeedID = this.Deserialize<int>(info, nameof(FeedID));
+            FeedKey = this.Deserialize<string>(info, nameof(FeedKey));
+            CreatedEpoch = this.Deserialize<int>(info, nameof(CreatedEpoch));
+            try
+            {
+                Expiration = this.Deserialize<DateTime>(info, nameof(Expiration));
+            }catch(Exception e)
+            {
+                //todo how to convert expiration given as double to DateTime?
+                //10/21/2020 1:06:23 PM   (maybe +- 2 hours due to TimeDifference) = 1603285523,0
+            }
+        }
+
         /// <summary>
         /// Create a new instance of the <see cref="DataPoint{T}"/> class with the given value and metadata provided.
         /// </summary>
@@ -59,40 +77,20 @@ namespace AdafruitIOApi.Results
             Expiration = expiration;
         }
 
+        
         /// <summary>
-        /// Warning: Can only convert this DataPoint if T is of type string.
-        /// Convert this DataPoint from <see cref="DataPoint{T}"/> with <code>T=string</code> to <see cref="DataPoint{U}"/>.
+        /// Used to serialize this object. The value is serialized as string to add the data as string to adafruit IO.
         /// </summary>
-        /// <typeparam name="U">The type of the value of the returned <see cref="DataPoint{U}"/> object.</typeparam>
-        /// <returns>The new <see cref="DataPoint{U}"/> that this <see cref="DataPoint{T}"/> was converted to.</returns>
-        public DataPoint<U> ConvertTo<U>()
+        /// <param name="info"></param>
+        /// <param name="context"></param>
+        public override void GetObjectData(SerializationInfo info, StreamingContext context)
         {
-            //todo maybe return null if convertion failed?
-            if (typeof(T) == typeof(string))
-                return new DataPoint<U>(JsonConvert.DeserializeObject<U>(Value.ToString()), Lat, Lon, Ele,
-                            CreatedAt, ID, FeedID, FeedKey, CreatedEpoch, Expiration);
-            else//todo find better way of handeling this.
-                throw new Exception("Not possible to convert from non string type");
-        }
-
-        /// <summary>
-        /// Generate a new instance of <see cref="DataPoint{T}"/> from the given .Json string, that is 
-        /// formatted according to the Adafruit IO (The value is of type string and if T is of another 
-        /// Type it will be encoded once more).
-        /// </summary>
-        /// <param name="json">The .Json string to be converted to the DataPoint. With the Value of 
-        /// type T encoded as type string.</param>
-        /// <returns>The generated <see cref="DataPoint{T}"/> from the passed .Json formatted string.</returns>
-        static public DataPoint<T> GenerateFromJson(string json)
-        {
-            if (typeof(T) == typeof(string))   //if type string just deserialize and return
-               return JsonConvert.DeserializeObject<DataPoint<T>>(json);
-            else                               //else convert the value of string to T and construct and return the new DataPoint.
-            {
-                DataPoint<string> dat = JsonConvert.DeserializeObject<DataPoint<string>>(json);
-                return new DataPoint<T>(JsonConvert.DeserializeObject<T>(dat.Value), dat.Lat, dat.Lon, dat.Ele, 
-                            dat.CreatedAt, dat.ID, dat.FeedID, dat.FeedKey, dat.CreatedEpoch, dat.Expiration);
-            }
+            base.GetObjectData(info, context);
+            info.AddValue(this.GetSerializableName(nameof(ID)), ID);
+            info.AddValue(this.GetSerializableName(nameof(FeedID)), FeedID);
+            info.AddValue(this.GetSerializableName(nameof(FeedKey)), FeedKey);
+            info.AddValue(this.GetSerializableName(nameof(CreatedEpoch)), CreatedEpoch);
+            info.AddValue(this.GetSerializableName(nameof(Expiration)), Expiration);
         }
     }
 }

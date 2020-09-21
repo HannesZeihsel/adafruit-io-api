@@ -15,7 +15,9 @@ Currently, the following features are supported:
 - Add data of generic type to the feed
 - Get string data from the feed
 - Get generic data from the feed
-- Get the most recent datapoint from the feed
+- Get the most recent data from the feed
+- Get first/last/previous/next/ data from the feed
+- Get data based upod data id
 
 ## <a name="HowToUse"></a> How to Use
 ### Setup
