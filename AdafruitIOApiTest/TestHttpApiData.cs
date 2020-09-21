@@ -33,8 +33,9 @@ namespace AdafruitIOApiTest
                         < new TimeSpan(0, 2, 0) &&
                     (datum.CreatedAt.Value.ToUniversalTime() - dp.CreatedAt.Value.ToUniversalTime()) >
                         new TimeSpan(0, -2, 0));
-
-            Datum<string> datum2 = new Datum<string>("TestValue", 2, 3, 7, DateTime.Now);
+            
+            //todo check why i cant use DateTime.Now here but the above call works.
+            Datum<string> datum2 = new Datum<string>("TestValue", 2, 3, 7, DateTime.Now - TimeSpan.FromSeconds(10));
             DataPoint<string> dp2 = await client.CreateDataAsync(AdafruitIOAccountData.FeedKeyValid, datum2);
 
             Assert.IsTrue(datum2.Value == dp2.Value);
@@ -96,6 +97,52 @@ namespace AdafruitIOApiTest
             Assert.IsTrue(ans != null);
 
             ans = await client.ChartFeedDataAsync(AdafruitIOAccountData.FeedKeyValid, DateTime.Now, DateTime.Now + TimeSpan.FromHours(2), Resolution.OneMinute, 2, AggregateField.Max, false);
+            Assert.IsTrue(ans != null);
+        }
+
+        [TestMethod]
+        public async Task TestGetLastData()
+        {
+            AdafruitIOHttpClient client = new AdafruitIOHttpClient(AdafruitIOAccountData.AccountValid);
+
+            var ans = await client.GetLastDataAsync<string>(AdafruitIOAccountData.FeedKeyValid);
+            Assert.IsTrue(ans != null);
+        }
+
+        [TestMethod]
+        public async Task TestGetFirstData()
+        {
+            AdafruitIOHttpClient client = new AdafruitIOHttpClient(AdafruitIOAccountData.AccountValid);
+
+            var ans = await client.GetFirstDataAsync<string>(AdafruitIOAccountData.FeedKeyValid);
+            Assert.IsTrue(ans != null);
+        }
+
+        [TestMethod]
+        public async Task TestGetNextData()
+        {
+            //await TestGetPreviousData();
+            AdafruitIOHttpClient client = new AdafruitIOHttpClient(AdafruitIOAccountData.AccountValid);
+
+            var ans = await client.GetNextDataAsync<string>(AdafruitIOAccountData.FeedKeyValid);
+            Assert.IsTrue(ans != null);
+        }
+
+        [TestMethod]
+        public async Task TestGetPreviousData()
+        {
+            AdafruitIOHttpClient client = new AdafruitIOHttpClient(AdafruitIOAccountData.AccountValid);
+
+            var ans = await client.GetPreviousDataAsync<string>(AdafruitIOAccountData.FeedKeyValid);
+            Assert.IsTrue(ans != null);
+        }
+
+        [TestMethod]
+        public async Task TaskTestGetMostRecentData()
+        {
+            AdafruitIOHttpClient client = new AdafruitIOHttpClient(AdafruitIOAccountData.AccountValid);
+
+            var ans = await client.GetMostRecentDataAsync(AdafruitIOAccountData.FeedKeyValid);
             Assert.IsTrue(ans != null);
         }
     }

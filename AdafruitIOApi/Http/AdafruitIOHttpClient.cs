@@ -14,6 +14,7 @@ using System.Web;
 
 namespace AdafruitIOApi
 {
+    //todo add throw error to documentation
     /// <summary>
     /// Provides methods to access to the HTTP API of Adafruit IO. This handeles the creation of 
     /// the HTTP requests and the interpretation and conversion of the received data.
@@ -99,7 +100,7 @@ namespace AdafruitIOApi
             catch (Exception e) { throw e; }
         }
 
-        
+
         /// <summary>
         /// Warning: Pagination not yet supported.
         /// Returns all the datapoints from Adafruit IO in the given feed <paramref name="feed"/> which
@@ -107,7 +108,8 @@ namespace AdafruitIOApi
         /// </summary>
         /// <param name="feed">The name of the feed (of the Adafruit IO account this Client is
         /// communicating with) from which the data schould be retrieved.</param>
-        /// <param name="timeInterval">The time interval that the data schould be created in.</param>
+        /// <param name="startTime">The beginning of the interval that the data schould be in.</param>
+        /// <param name="endTime">The end of the interval that the data schould be in.</param>
         /// <param name="limit">The limit of the number datapoints that schould be returned</param>
         /// <param name="include">The metadata that schould be included in the datapoints.</param>
         /// <param name="before">TODO: check meaning of this parameter.</param>
@@ -130,7 +132,8 @@ namespace AdafruitIOApi
         /// <typeparam name="T">The expected type of the data's value.</typeparam>
         /// <param name="feed">The name of the feed (of the Adafruit IO account this Client is
         /// communicating with) from which the data schould be retrieved.</param>
-        /// <param name="timeInterval">The time interval that the data schould be created in.</param>
+        /// <param name="startTime">The beginning of the interval that the data schould be in.</param>
+        /// <param name="endTime">The end of the interval that the data schould be in.</param>
         /// <param name="limit">The limit of the number datapoints that schould be returned</param>
         /// <param name="include">The metadata that schould be included in the datapoints.</param>
         /// <param name="before">TODO: check meaning of this parameter.</param>
@@ -145,9 +148,9 @@ namespace AdafruitIOApi
             //setup query parameters if those are provided
             var queryParameters = HttpUtility.ParseQueryString(string.Empty);
             if (!(startTime is null))
-                queryParameters["start_time"] = startTime.Value.ToString("s"); //todo check if format is correct
+                queryParameters["start_time"] = startTime.Value.ToString("s");
             if (!(endTime is null))
-                queryParameters["end_time"] = endTime.Value.ToString("s"); // todo check if format is correct
+                queryParameters["end_time"] = endTime.Value.ToString("s");
             if (!(limit is null))
                 queryParameters["limit"] = limit.ToString();
             if (!(include is null))
@@ -175,6 +178,20 @@ namespace AdafruitIOApi
             catch (Exception e) { throw e; }
         }
 
+        /// <summary>
+        /// Get chart data based upon the pased parameters to use as data to display a chart.
+        /// </summary>
+        /// <param name="feed">The name of the feed (of the Adafruit IO account this Client is
+        /// communicating with) from which the data schould be retrieved.</param>
+        /// <param name="startTime">The beginning of the interval that the data schould be in.</param>
+        /// <param name="endTime">The end of the interval that the data schould be in.</param>
+        /// <param name="resolution">The resolution representing the size of the aggreagete slice.</param>
+        /// <param name="hours">The number of hours to include in the data (Will be ignored if 
+        /// <paramref name="startTime"/> or <paramref name="endTime"/> are given).</param>
+        /// <param name="field">The type of aggreagation to use to calculate the data in each slice.</param>
+        /// <param name="raw">If true it forces the data to be returned raw. Not compatible with 
+        /// <paramref name="field"/> or <paramref name="resolution"/>.</param>
+        /// <returns>The ChartData as requested and defined by the parameters.</returns>
         public async Task<ChartData> ChartFeedDataAsync(string feed, 
             DateTime? startTime = null,
             DateTime? endTime = null,
@@ -186,9 +203,9 @@ namespace AdafruitIOApi
             //setup query parameters if those are provided
             var queryParameters = HttpUtility.ParseQueryString(string.Empty);
             if (!(startTime is null))
-                queryParameters["start_time"] = startTime.Value.ToString("s"); //todo check if format is correct
+                queryParameters["start_time"] = startTime.Value.ToString("s");
             if (!(endTime is null))
-                queryParameters["end_time"] = endTime.Value.ToString("s"); // todo check if format is correct
+                queryParameters["end_time"] = endTime.Value.ToString("s");
             if (!(resolution is null))
                 queryParameters["resolution"] = ((int)resolution).ToString();
             if (!(hours is null))
@@ -209,8 +226,6 @@ namespace AdafruitIOApi
                 
                 var response = await Client.GetAsync(request.RequestUri);
                 await RaiseErrorIfHttpResponseErrorAsync(response, feed);
-                //todo make return type more accurate and maybe incoorporate into existing types [Maybe delete TimeInterval?]
-                //todo check Json deserialize setting to make it easier and prevent conversion from string to type T
                 return JsonConvert.DeserializeObject<ChartData>(await response.Content.ReadAsStringAsync());
             }
             catch (Exception e) when (e is InvalidOperationException || e is HttpRequestException || e is TaskCanceledException)
@@ -220,6 +235,27 @@ namespace AdafruitIOApi
             catch (Exception e) { throw e; }
         }
 
+        /// <summary>
+        /// Adds all the provided Data as multiple values to the given feed. 
+        /// </summary>
+        /// <param name="feed">The name of the feed (of the Adafruit IO account this Client is
+        /// communicating with) to wich the datum schould be added to.</param>
+        /// <param name="data">The list of data which schould be added to the feed.</param>
+        /// <returns>The added List of <see cref="DataPoint{T}"/> with <code>T = string</code> that was returned by Adafruit IO 
+        /// after the creation.</returns>
+        public async Task<List<DataPoint<string>>> CreateMultipleDataRecordsAsync(string feed, List<Datum<string>> data)
+        {
+            return await CreateMultipleDataRecordsAsync<string>(feed, data);
+        }
+        
+        /// <summary>
+        /// Adds all the provided Data as multiple values to the given feed. 
+        /// </summary>
+        /// <param name="feed">The name of the feed (of the Adafruit IO account this Client is
+        /// communicating with) to wich the datum schould be added to.</param>
+        /// <param name="data">The list of data which schould be added to the feed.</param>
+        /// <returns>The added List of <see cref="DataPoint{T}"/> that was returned by Adafruit IO 
+        /// after the creation.</returns>
         public async Task<List<DataPoint<T>>> CreateMultipleDataRecordsAsync<T>(string feed, List<Datum<T>> data)
         {
             string dataString = JsonConvert.SerializeObject(data);
@@ -245,6 +281,14 @@ namespace AdafruitIOApi
             catch (Exception e) { throw e; }
         }
 
+        /// <summary>
+        /// Helper methode to get one DataPoint back from Adafruit that requires only include parameters and a special path.
+        /// </summary>
+        /// <typeparam name="T">The type of the expected value.</typeparam>
+        /// <param name="feed">The feed from which the data schould be retrieved.</param>
+        /// <param name="special">The special path pointing to the wanted data.</param>
+        /// <param name="include">The include parameters that schould be present in the result.</param>
+        /// <returns>The DataPoint as returned by adafruit.</returns>
         private async Task<DataPoint<T>> GetSpecialDataAsync<T>(string feed, string special,  IncludeData? include = null)
         {
             //setup query parameters if those are provided
@@ -263,12 +307,7 @@ namespace AdafruitIOApi
 
                 var response = await Client.GetAsync(request.RequestUri);
                 await RaiseErrorIfHttpResponseErrorAsync(response, feed);
-                if (typeof(T) == typeof(string))
-                    return JsonConvert.DeserializeObject<DataPoint<T>>(await response.Content.ReadAsStringAsync());
-                else
-                {
-                    return JsonConvert.DeserializeObject<DataPoint<T>>(await response.Content.ReadAsStringAsync());
-                }
+                return JsonConvert.DeserializeObject<DataPoint<T>>(await response.Content.ReadAsStringAsync());    
             }
             catch (Exception e) when (e is InvalidOperationException || e is HttpRequestException || e is TaskCanceledException)
             {
@@ -277,30 +316,145 @@ namespace AdafruitIOApi
             catch (Exception e) { throw e; }
         }
 
+        /// <summary>
+        /// Returns the previous DataPoint from Adafruit IO in the given feed <paramref name="feed"/>.
+        /// </summary>
+        /// <param name="feed">The name of the feed (of the Adafruit IO account this Client is
+        /// communicating with) from which the data schould be retrieved.</param>
+        /// <param name="include">The metadata that schould be included in the datapoints.</param>
+        /// <returns>A <see cref="DataPoint{T}"/> with <code>T=string</code> with the retrieved data.</returns>
+        public async Task<DataPoint<string>> GetPreviousDataAsync(string feed, IncludeData? include = null)
+        {
+            return await GetPreviousDataAsync<string>(feed, include);
+        }
 
+        /// <summary>
+        /// Returns the previous DataPoint from Adafruit IO in the given feed <paramref name="feed"/>.
+        /// </summary>
+        /// <typeparam name="T">The expected type of the data's value.</typeparam>
+        /// <param name="feed">The name of the feed (of the Adafruit IO account this Client is
+        /// communicating with) from which the data schould be retrieved.</param>
+        /// <param name="include">The metadata that schould be included in the datapoints.</param>
+        /// <returns>A <see cref="DataPoint{T}"/> with the retrieved data.</returns>
         public async Task<DataPoint<T>> GetPreviousDataAsync<T>(string feed, IncludeData? include = null)
         {
             return await GetSpecialDataAsync<T>(feed, "previous", include);
         }
 
+        /// <summary>
+        /// Returns the next DataPoint from Adafruit IO in the given feed <paramref name="feed"/>.
+        /// </summary>
+        /// <param name="feed">The name of the feed (of the Adafruit IO account this Client is
+        /// communicating with) from which the data schould be retrieved.</param>
+        /// <param name="include">The metadata that schould be included in the datapoints.</param>
+        /// <returns>A <see cref="DataPoint{T}"/> with <code>T=string</code> with the retrieved data.</returns>
+        public async Task<DataPoint<string>> GetNextDataAsync(string feed, IncludeData? include = null)
+        {
+            return await GetNextDataAsync<string>(feed, include);
+        }
+
+        /// <summary>
+        /// Returns the next DataPoint from Adafruit IO in the given feed <paramref name="feed"/>.
+        /// </summary>
+        /// <typeparam name="T">The expected type of the data's value.</typeparam>
+        /// <param name="feed">The name of the feed (of the Adafruit IO account this Client is
+        /// communicating with) from which the data schould be retrieved.</param>
+        /// <param name="include">The metadata that schould be included in the datapoints.</param>
+        /// <returns>A <see cref="DataPoint{T}"/> with the retrieved data.</returns>
         public async Task<DataPoint<T>> GetNextDataAsync<T>(string feed, IncludeData? include = null)
         {
             return await GetSpecialDataAsync<T>(feed, "next", include);
         }
 
+        /// <summary>
+        /// Returns the last DataPoint from Adafruit IO in the given feed <paramref name="feed"/>.
+        /// </summary>
+        /// <param name="feed">The name of the feed (of the Adafruit IO account this Client is
+        /// communicating with) from which the data schould be retrieved.</param>
+        /// <param name="include">The metadata that schould be included in the datapoints.</param>
+        /// <returns>A <see cref="DataPoint{T}"/> with <code>T=string</code> with the retrieved data.</returns>
+        public async Task<DataPoint<string>> GetLastDataAsync(string feed, IncludeData? include = null)
+        {
+            return await GetLastDataAsync<string>(feed, include);
+        }
+
+        /// <summary>
+        /// Returns the last DataPoint from Adafruit IO in the given feed <paramref name="feed"/>.
+        /// </summary>
+        /// <typeparam name="T">The expected type of the data's value.</typeparam>
+        /// <param name="feed">The name of the feed (of the Adafruit IO account this Client is
+        /// communicating with) from which the data schould be retrieved.</param>
+        /// <param name="include">The metadata that schould be included in the datapoints.</param>
+        /// <returns>A <see cref="DataPoint{T}"/> with the retrieved data.</returns>
         public async Task<DataPoint<T>> GetLastDataAsync<T>(string feed, IncludeData? include = null)
         {
             return await GetSpecialDataAsync<T>(feed, "last", include);
         }
 
+        /// <summary>
+        /// Returns the first DataPoint from Adafruit IO in the given feed <paramref name="feed"/>.
+        /// </summary>
+        /// <param name="feed">The name of the feed (of the Adafruit IO account this Client is
+        /// communicating with) from which the data schould be retrieved.</param>
+        /// <param name="include">The metadata that schould be included in the datapoints.</param>
+        /// <returns>A <see cref="DataPoint{T}"/> with <code>T=string</code> with the retrieved data.</returns>
+        public async Task<DataPoint<string>> GetFirstDataAsync(string feed, IncludeData? include = null)
+        {
+            return await GetFirstDataAsync<string>(feed, include);
+        }
+
+        /// <summary>
+        /// Returns the first DataPoint from Adafruit IO in the given feed <paramref name="feed"/>.
+        /// </summary>
+        /// <typeparam name="T">The expected type of the data's value.</typeparam>
+        /// <param name="feed">The name of the feed (of the Adafruit IO account this Client is
+        /// communicating with) from which the data schould be retrieved.</param>
+        /// <param name="include">The metadata that schould be included in the datapoints.</param>
+        /// <returns>A <see cref="DataPoint{T}"/> with the retrieved data.</returns>
         public async Task<DataPoint<T>> GetFirstDataAsync<T>(string feed, IncludeData? include = null)
         {
             return await GetSpecialDataAsync<T>(feed, "first", include);
         }
 
+        /// <summary>
+        /// Returns the DataPoint from Adafruit IO in the given feed <paramref name="feed"/> as specified
+        /// by the given id <paramref name="id"/>.
+        /// </summary>
+        /// <param name="feed">The name of the feed (of the Adafruit IO account this Client is
+        /// communicating with) from which the data schould be retrieved.</param>
+        /// <param name="include">The metadata that schould be included in the datapoints.</param>
+        /// <param name="id">The id of the DataPoint that schould be retreived.</param>
+        /// <returns>A <see cref="DataPoint{T}"/> with <code>T=string</code> with the retrieved data.</returns>
+        public async Task<DataPoint<string>> GetDataPointAsync(string feed, string id, IncludeData? include = null)
+        {
+            return await GetDataPointAsync<string>(feed, id, include);
+        }
+
+        /// <summary>
+        /// Returns the DataPoint from Adafruit IO in the given feed <paramref name="feed"/> as specified
+        /// by the given id <paramref name="id"/>.
+        /// </summary>
+        /// <typeparam name="T">The expected type of the data's value.</typeparam>
+        /// <param name="feed">The name of the feed (of the Adafruit IO account this Client is
+        /// communicating with) from which the data schould be retrieved.</param>
+        /// <param name="include">The metadata that schould be included in the datapoints.</param>
+        /// <param name="id">The id of the DataPoint that schould be retreived.</param>
+        /// <returns>A <see cref="DataPoint{T}"/> with the retrieved data.</returns>
         public async Task<DataPoint<T>> GetDataPointAsync<T>(string feed, string id, IncludeData? include = null)
         {
             return await GetSpecialDataAsync<T>(feed, id, include);
+        }
+
+        /// <summary>
+        /// Gets the most recent datapoint.
+        /// </summary>
+        /// <typeparam name="T">The expected type of the data's value.</typeparam>
+        /// <param name="feed">The name of the feed (of the Adafruit IO account this Client is
+        /// communicating with) from which the data schould be retrieved.</param>
+        /// <returns>The most recent <see cref="DataPoint{T}"/> with <code>T=string</code> of the given feed.</returns>
+        public async Task<DataPoint<string>> GetMostRecentDataPointAsync(string feed)
+        {
+            return await GetMostRecentDataPointAsync<string>(feed);
         }
 
         /// <summary>
@@ -315,12 +469,66 @@ namespace AdafruitIOApi
             return (await GetDataAsync<T>(feed, limit: 1))[0];
         }
 
-        /*public string GetMostRecentData(string feed)
+        /// <summary>
+        /// Gets the most recent datum of the feed.
+        /// </summary>
+        /// <param name="feed">The name of the feed (of the Adafruit IO account this Client is
+        /// communicating with) from which the data schould be retrieved.</param>
+        /// <returns>The most recent <see cref="Datum{T}{T}"/> with <code>T=string</code> 
+        /// of the given feed.</returns>
+        public async Task<Datum<string>> GetMostRecentDataAsync(string feed)
         {
-            throw new NotImplementedException();
+            return await GetMostRecentDataAsync<string>(feed);
         }
 
-        public string UpdateDataPoint(string feed, string id, string datum)
+        /// <summary>
+        /// Gets the most recent datum of the feed.
+        /// </summary>
+        /// <typeparam name="T">The expected type of the data's value.</typeparam>
+        /// <param name="feed">The name of the feed (of the Adafruit IO account this Client is
+        /// communicating with) from which the data schould be retrieved.</param>
+        /// <returns>The most recent <see cref="Datum{T}{T}"/> of the given feed.</returns>
+        public async Task<Datum<T>> GetMostRecentDataAsync<T>(string feed)
+        {
+            try
+            {
+                var request = new HttpRequestMessage()
+                {
+                    Method = HttpMethod.Get,
+                    RequestUri = new Uri($"https://io.adafruit.com/api/v2/{account.Username}/feeds/{feed}/data/retain")
+                };
+
+                var response = await Client.GetAsync(request.RequestUri);
+                await RaiseErrorIfHttpResponseErrorAsync(response, feed);
+
+                string res = await response.Content.ReadAsStringAsync();
+                res = res.Trim('\n', '\r');
+                int lastIndex1 = res.LastIndexOf(',');
+                int lastIndex2 = res.LastIndexOf(',', lastIndex1-1);
+                int lastIndex3 = res.LastIndexOf(',', lastIndex2-1);
+
+                float? ele = null, lon = null, lat = null;
+                if (float.TryParse(res.Substring(lastIndex1 + 1, res.Length - lastIndex1 - 1), out float eleF))
+                    ele = eleF;
+                if (float.TryParse(res.Substring(lastIndex2 + 1, lastIndex1 - lastIndex2 - 1), out float lonF))
+                    lon = lonF;
+                if (float.TryParse(res.Substring(lastIndex3 + 1, lastIndex2 - lastIndex3 - 1), out float latF))
+                    lat = latF;
+                T t;
+                if (typeof(T) == typeof(string))
+                    t = JsonConvert.DeserializeObject<T>("\"" + res.Substring(0, lastIndex3) + "\"");
+                else
+                    t = JsonConvert.DeserializeObject<T>(res.Substring(0, lastIndex3));
+                return new Datum<T>(t, lat, lon, ele, null);
+            }
+            catch (Exception e) when (e is InvalidOperationException || e is HttpRequestException || e is TaskCanceledException)
+            {
+                throw new ConnectionException("Exception in http request.", e);
+            }
+            catch (Exception e) { throw e; }
+        }
+
+        /*public string UpdateDataPoint(string feed, string id, string datum)
         {
             throw new NotImplementedException();
         }

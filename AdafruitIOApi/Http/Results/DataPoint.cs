@@ -37,20 +37,20 @@ namespace AdafruitIOApi.Results
         public DateTime Expiration { get; set; }
 
 
-        //todo
-        /// <summary>
-        /// Constructor to construct new instance of <see cref="DataPoint{T}"/> from a serialized version. This deserializes 
-        /// Value from string to type <typeparamref name="T"/> because it will be stored as string on adafruit io.
-        /// </summary>
-        /// <param name="info"></param>
-        /// <param name="context"></param>
         protected DataPoint(SerializationInfo info, StreamingContext context):base(info, context)
         {
             ID = this.Deserialize<string>(info, nameof(ID));
             FeedID = this.Deserialize<int>(info, nameof(FeedID));
             FeedKey = this.Deserialize<string>(info, nameof(FeedKey));
             CreatedEpoch = this.Deserialize<int>(info, nameof(CreatedEpoch));
-            Expiration = this.Deserialize<DateTime>(info, nameof(Expiration));
+            try
+            {
+                Expiration = this.Deserialize<DateTime>(info, nameof(Expiration));
+            }catch(Exception e)
+            {
+                //todo how to convert expiration given as double to DateTime?
+                //10/21/2020 1:06:23 PM   (maybe +- 2 hours due to TimeDifference) = 1603285523,0
+            }
         }
 
         /// <summary>
