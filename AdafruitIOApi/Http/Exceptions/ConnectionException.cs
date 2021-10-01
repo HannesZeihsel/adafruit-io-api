@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace AdafruitIOApi.Exceptions
+namespace AdafruitIOApi.Http.Exceptions
 {
     /// <summary>
     /// This exception is used for exceptions that are caused by the underlying http request.

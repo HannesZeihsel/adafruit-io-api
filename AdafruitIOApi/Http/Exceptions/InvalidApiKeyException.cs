@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace AdafruitIOApi.Exceptions
+namespace AdafruitIOApi.Http.Exceptions
 {
     /// <summary>
     /// This exception is raised if a request to adafruit io will come back with an error stating the API key was invalid.
@@ -39,7 +39,7 @@ namespace AdafruitIOApi.Exceptions
         public static InvalidApiKeyException GenerateInvalidKeyExceptionFromUsername(string username)
         {
             return new InvalidApiKeyException($"The passed API-key is invalid for the given username {username}, " +
-            $"please check if both are correct.");
+            "please check if both are correct.");
         }
 
         /// <summary>
@@ -53,7 +53,7 @@ namespace AdafruitIOApi.Exceptions
         /// <returns>The generated new Instance of the <see cref="InvalidApiKeyException"/> class.</returns>
         public static InvalidApiKeyException GenerateInvalidKeyExceptionFromUsername(string username, Exception inner)
         {
-            return new InvalidApiKeyException($"The passed API-key is invalid for the given " +
+            return new InvalidApiKeyException("The passed API-key is invalid for the given " +
             $"username {username}, please check if both are correct.", inner);
         }
     }

@@ -1,11 +1,10 @@
-using AdafruitIOApi;
 using AdafruitIOApi.Http.Parameters;
-using AdafruitIOApi.Parameters;
-using AdafruitIOApi.Results;
 using AdafruitIOApiHttpTest;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Threading.Tasks;
+using AdafruitIOApi.Http;
+using AdafruitIOApi.Http.Results;
 
 namespace AdafruitIOApiTest
 {
@@ -76,7 +75,7 @@ namespace AdafruitIOApiTest
             includeData = IncludeData.CreatedAt | IncludeData.Value;
             ans = await client.GetDataAsync<string>(AdafruitIOAccountData.FeedKeyValid, include: includeData);
             Assert.IsTrue(ans != null);
-            Assert.IsTrue(ans.TrueForAll((d) => d.Lat == null && d.Lon == null && d.Ele == null && d.ID == null));
+            Assert.IsTrue(ans.TrueForAll((d) => d.Lat == null && d.Lon == null && d.Ele == null && d.Id == null));
 
             ans = await client.GetDataAsync<string>(AdafruitIOAccountData.FeedKeyValid, limit: 12);
             Assert.IsTrue(ans != null);

@@ -1,11 +1,9 @@
-﻿using AdafruitIOApi.Parameters;
-using AdafruitIOApi.Results;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
+﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Runtime.Serialization;
+using AdafruitIOApi.Http.Parameters;
 
 namespace AdafruitIOApi.Http.Results
 {
@@ -50,7 +48,7 @@ namespace AdafruitIOApi.Http.Results
             string[][] dataString = new string[Data.Count][];
             for (int i = 0; i < Data.Count; i++)
             {
-                dataString[i] = new string[] { Data[i].Value, Data[i].CreatedAt.Value.ToString("s") };
+                dataString[i] = new[] { Data[i].Value, Data[i].CreatedAt.Value.ToString("s") };
             }
             info.AddValue(this.GetSerializableName(nameof(Data)), Data);
             info.AddValue(this.GetSerializableName(nameof(Storage)), Storage);

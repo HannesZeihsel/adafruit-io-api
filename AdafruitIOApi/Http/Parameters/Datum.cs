@@ -1,16 +1,16 @@
-﻿using Newtonsoft.Json;
-using System;
+﻿using System;
 using System.Reflection;
 using System.Runtime.Serialization;
+using Newtonsoft.Json;
 
-namespace AdafruitIOApi.Parameters
+namespace AdafruitIOApi.Http.Parameters
 {
     /// <summary>
     /// Represents a datum that schould be created and added to one of the feeds of Adafruit IO
     /// </summary>
     /// <typeparam name="T">The Type of Data that schould be added.</typeparam>
     [Serializable]
-    public class Datum<T>:ISerializable
+    public class Datum<T> : ISerializable
     {
         /// The value of this datum (of Type T).
         [JsonProperty("value")]
@@ -130,7 +130,7 @@ namespace AdafruitIOApi.Parameters
     }
 
     //todo cleanup comment
-    public static class ISerializableExtension
+    public static class SerializableExtension
     {
         public static string GetSerializableName(this ISerializable serializable, string propertyName)
         {
@@ -138,11 +138,11 @@ namespace AdafruitIOApi.Parameters
             return string.IsNullOrEmpty(jsonName) ? propertyName : jsonName;
         }
 
-        public static U Deserialize<U>(this ISerializable serializable, SerializationInfo info, string propertyName)
+        public static TU Deserialize<TU>(this ISerializable serializable, SerializationInfo info, string propertyName)
         {
             try
             {
-                return (U)info.GetValue(serializable.GetSerializableName(propertyName),typeof(U));
+                return (TU)info.GetValue(serializable.GetSerializableName(propertyName),typeof(TU));
             }
             catch(SerializationException)
             {

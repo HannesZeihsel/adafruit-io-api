@@ -1,9 +1,9 @@
-﻿using AdafruitIOApi.Parameters;
-using Newtonsoft.Json;
-using System;
+﻿using System;
 using System.Runtime.Serialization;
+using AdafruitIOApi.Http.Parameters;
+using Newtonsoft.Json;
 
-namespace AdafruitIOApi.Results
+namespace AdafruitIOApi.Http.Results
 {
     /// <summary>
     /// Represents a datapoint from the Arduino IO with its value of type <typeparamref name="T"/> and assosiated metadata.
@@ -14,11 +14,11 @@ namespace AdafruitIOApi.Results
     {
         ///The ID of this datapoint as metadata of this datum.
         [JsonProperty("id")]
-        public string ID { get; set; }
+        public string Id { get; set; }
         
         ///The feed ID of this datapoint as metadata of this datum.
         [JsonProperty("feed_id")]
-        public int FeedID { get; set; }
+        public int FeedId { get; set; }
 
         ///The feed key of this datapoint as metadata of this datum.
         [JsonProperty("feed_key")]
@@ -39,14 +39,14 @@ namespace AdafruitIOApi.Results
 
         protected DataPoint(SerializationInfo info, StreamingContext context):base(info, context)
         {
-            ID = this.Deserialize<string>(info, nameof(ID));
-            FeedID = this.Deserialize<int>(info, nameof(FeedID));
+            Id = this.Deserialize<string>(info, nameof(Id));
+            FeedId = this.Deserialize<int>(info, nameof(FeedId));
             FeedKey = this.Deserialize<string>(info, nameof(FeedKey));
             CreatedEpoch = this.Deserialize<int>(info, nameof(CreatedEpoch));
             try
             {
                 Expiration = this.Deserialize<DateTime>(info, nameof(Expiration));
-            }catch(Exception e)
+            }catch(Exception)
             {
                 //todo how to convert expiration given as double to DateTime?
                 //10/21/2020 1:06:23 PM   (maybe +- 2 hours due to TimeDifference) = 1603285523,0
@@ -70,8 +70,8 @@ namespace AdafruitIOApi.Results
                 DateTime? createdAt, string iD, int feedId, string feedKey, 
                 int createdEpoch, DateTime expiration):base(value, lat, lon, ele, createdAt)
         {
-            ID = iD;
-            FeedID = feedId;
+            Id = iD;
+            FeedId = feedId;
             FeedKey = feedKey;
             CreatedEpoch = createdEpoch;
             Expiration = expiration;
@@ -86,8 +86,8 @@ namespace AdafruitIOApi.Results
         public override void GetObjectData(SerializationInfo info, StreamingContext context)
         {
             base.GetObjectData(info, context);
-            info.AddValue(this.GetSerializableName(nameof(ID)), ID);
-            info.AddValue(this.GetSerializableName(nameof(FeedID)), FeedID);
+            info.AddValue(this.GetSerializableName(nameof(Id)), Id);
+            info.AddValue(this.GetSerializableName(nameof(FeedId)), FeedId);
             info.AddValue(this.GetSerializableName(nameof(FeedKey)), FeedKey);
             info.AddValue(this.GetSerializableName(nameof(CreatedEpoch)), CreatedEpoch);
             info.AddValue(this.GetSerializableName(nameof(Expiration)), Expiration);

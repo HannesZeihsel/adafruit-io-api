@@ -1,7 +1,7 @@
-﻿using AdafruitIOApi;
-using AdafruitIOApi.Exceptions;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Threading.Tasks;
+using AdafruitIOApi.Http;
+using AdafruitIOApi.Http.Exceptions;
 
 namespace AdafruitIOApiTest
 {

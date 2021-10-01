@@ -1,7 +1,6 @@
 ﻿using System;
-using System.Net.Http;
 
-namespace AdafruitIOApi.Exceptions
+namespace AdafruitIOApi.Http.Exceptions
 {
     /// <summary>
     /// This exception is raised if a request to adafruit io will come back with an http error code that was not expected.

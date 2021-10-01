@@ -1,18 +1,16 @@
-﻿using AdafruitIOApi.Exceptions;
-using AdafruitIOApi.Http.Parameters;
-using AdafruitIOApi.Http.Results;
-using AdafruitIOApi.Parameters;
-using AdafruitIOApi.Results;
-using Newtonsoft.Json;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web;
+using AdafruitIOApi.Http.Exceptions;
+using AdafruitIOApi.Http.Parameters;
+using AdafruitIOApi.Http.Results;
+using Newtonsoft.Json;
 
-namespace AdafruitIOApi
+namespace AdafruitIOApi.Http
 {
     //todo add throw error to documentation
     /// <summary>
@@ -50,7 +48,7 @@ namespace AdafruitIOApi
         /// after the creation.</returns>
         public async Task<DataPoint<string>> CreateDataAsync(string feed, string data)
         {
-            return await CreateDataAsync<string>(feed, new Datum<string>(data));
+            return await CreateDataAsync(feed, new Datum<string>(data));
         }
 
         /// <summary>
@@ -65,7 +63,7 @@ namespace AdafruitIOApi
         /// after the creation.</returns>
         public async Task<DataPoint<T>> CreateDataAsync<T>(string feed, T data)
         {
-            return await CreateDataAsync<T>(feed, new Datum<T>(data));
+            return await CreateDataAsync(feed, new Datum<T>(data));
         }
 
         /// <summary>
@@ -157,7 +155,7 @@ namespace AdafruitIOApi
                 queryParameters["include"] = include.Value.GetDataText();
             if (!string.IsNullOrEmpty(before))
                 queryParameters["before"] = before;
-            string queryParameterString = queryParameters.Count <= 0 ? "" : "?" + queryParameters.ToString();
+            string queryParameterString = queryParameters.Count <= 0 ? "" : "?" + queryParameters;
 
             try
             {
@@ -214,7 +212,7 @@ namespace AdafruitIOApi
                 queryParameters["field"] = field.Value.GetDataText();
             if (!(raw is null))
                 queryParameters["raw"] = raw.Value ? "true" : "false";
-            string queryParameterString = queryParameters.Count <= 0 ? "" : "?" + queryParameters.ToString();
+            string queryParameterString = queryParameters.Count <= 0 ? "" : "?" + queryParameters;
 
             try
             {
@@ -295,7 +293,7 @@ namespace AdafruitIOApi
             var queryParameters = HttpUtility.ParseQueryString(string.Empty);
             if (!(include is null))
                 queryParameters["include"] = include.Value.GetDataText();
-            string queryParameterString = queryParameters.Count <= 0 ? "" : "?" + queryParameters.ToString();
+            string queryParameterString = queryParameters.Count <= 0 ? "" : "?" + queryParameters;
 
             try
             {
@@ -448,7 +446,6 @@ namespace AdafruitIOApi
         /// <summary>
         /// Gets the most recent datapoint.
         /// </summary>
-        /// <typeparam name="T">The expected type of the data's value.</typeparam>
         /// <param name="feed">The name of the feed (of the Adafruit IO account this Client is
         /// communicating with) from which the data schould be retrieved.</param>
         /// <returns>The most recent <see cref="DataPoint{T}"/> with <code>T=string</code> of the given feed.</returns>
@@ -474,7 +471,7 @@ namespace AdafruitIOApi
         /// </summary>
         /// <param name="feed">The name of the feed (of the Adafruit IO account this Client is
         /// communicating with) from which the data schould be retrieved.</param>
-        /// <returns>The most recent <see cref="Datum{T}{T}"/> with <code>T=string</code> 
+        /// <returns>The most recent <see cref="Datum{T}"/> with <code>T=string</code> 
         /// of the given feed.</returns>
         public async Task<Datum<string>> GetMostRecentDataAsync(string feed)
         {
@@ -487,7 +484,7 @@ namespace AdafruitIOApi
         /// <typeparam name="T">The expected type of the data's value.</typeparam>
         /// <param name="feed">The name of the feed (of the Adafruit IO account this Client is
         /// communicating with) from which the data schould be retrieved.</param>
-        /// <returns>The most recent <see cref="Datum{T}{T}"/> of the given feed.</returns>
+        /// <returns>The most recent <see cref="Datum{T}"/> of the given feed.</returns>
         public async Task<Datum<T>> GetMostRecentDataAsync<T>(string feed)
         {
             try
@@ -548,25 +545,21 @@ namespace AdafruitIOApi
         {
             if (response.IsSuccessStatusCode)
                 return;
-            else
-            {
-                HttpResultException inner = new HttpResultException($"Error Response Status-Code (HTTP): {response.StatusCode}. " +
-                             $"Content of the Response is: {await response.Content.ReadAsStringAsync()}.");
-                if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
-                    if ((await response.Content.ReadAsStringAsync()).
-                                Equals("{\"error\":\"request failed - invalid API key provided\"}", StringComparison.OrdinalIgnoreCase))
-                        throw new InvalidApiKeyException(account.Username, inner);
-                    else
-                        throw inner;
-                else if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
-                    if ((await response.Content.ReadAsStringAsync()).
-                                Equals("{\"error\":\"not found - that username does not exist\"}", StringComparison.OrdinalIgnoreCase))
-                        throw new UsernameNotFoundException(account.Username, inner);
-                    else
-                        throw new GeneralNotFoundException(account.Username, feed, inner);
+            HttpResultException inner = new HttpResultException($"Error Response Status-Code (HTTP): {response.StatusCode}. " +
+                                                                $"Content of the Response is: {await response.Content.ReadAsStringAsync()}.");
+            if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                if ((await response.Content.ReadAsStringAsync()).
+                    Equals("{\"error\":\"request failed - invalid API key provided\"}", StringComparison.OrdinalIgnoreCase))
+                    throw new InvalidApiKeyException(account.Username, inner);
                 else
                     throw inner;
-            }
+            if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+                if ((await response.Content.ReadAsStringAsync()).
+                    Equals("{\"error\":\"not found - that username does not exist\"}", StringComparison.OrdinalIgnoreCase))
+                    throw new UsernameNotFoundException(account.Username, inner);
+                else
+                    throw new GeneralNotFoundException(account.Username, feed, inner);
+            throw inner;
         }
     }
 }

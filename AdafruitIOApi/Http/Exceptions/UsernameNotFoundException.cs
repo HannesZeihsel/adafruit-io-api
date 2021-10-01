@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace AdafruitIOApi.Exceptions
+namespace AdafruitIOApi.Http.Exceptions
 {
     /// <summary>
     /// This exception is raised if a request to adafruit io will come back with an error stating the username was not found.
@@ -39,7 +39,7 @@ namespace AdafruitIOApi.Exceptions
         public static UsernameNotFoundException GenerateUsernameNotFoundExceptionFromUsername(string username)
         {
             return new UsernameNotFoundException($"The username {username} was not found on adafruit.io. " +
-            $"Please check if the username does exits.");
+            "Please check if the username does exits.");
         }
 
         /// <summary>
@@ -54,7 +54,7 @@ namespace AdafruitIOApi.Exceptions
         public static UsernameNotFoundException GenerateUsernameNotFoundExceptionFromUsername(string username, Exception inner)
         {
             return new UsernameNotFoundException($"The username {username} was not found on adafruit.io. " +
-            $"Please check if the username does exits.", inner);
+            "Please check if the username does exits.", inner);
         }
     }
 }

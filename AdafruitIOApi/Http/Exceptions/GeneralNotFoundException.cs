@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace AdafruitIOApi.Exceptions
+namespace AdafruitIOApi.Http.Exceptions
 {
     /// <summary>
     /// This exception is raised if a request to adofruit io will come back with an error stating not found.
@@ -38,7 +38,7 @@ namespace AdafruitIOApi.Exceptions
         /// <param name="username">The username used to attempt a connection to Adafruit IO.</param>
         /// <param name="feedKey">The feed Key (name of feed) used to attempt a connection to Adafruit 
         /// IO.</param>
-        public GeneralNotFoundException(string username, string feedKey) : base($"Cannot find the requested data. " +
+        public GeneralNotFoundException(string username, string feedKey) : base("Cannot find the requested data. " +
             $"This might be caused by an invalid feed key, please check if the feed {feedKey} is available under " +
             $"the account with the username {username}") { }
 
@@ -53,7 +53,7 @@ namespace AdafruitIOApi.Exceptions
         /// IO.</param>
         /// <param name="inner">The exception that is the cause of the current exception, or a null 
         /// reference (Nothing in Visual Basic) if no inner exception is specified.</param>
-        public GeneralNotFoundException(string username, string feedKey, Exception inner) : base($"Cannot find the " +
+        public GeneralNotFoundException(string username, string feedKey, Exception inner) : base("Cannot find the " +
             $"requested data. This might be caused by an invalid feed key, please check if the feed {feedKey} is " +
             $"available under the account with the username {username}", inner) { }
     }

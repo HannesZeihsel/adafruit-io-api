@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace AdafruitIOApi.Parameters
+namespace AdafruitIOApi.Http.Parameters
 {
     /// <summary>
     /// Enum with Flags used to specify which (meta-)data schould be received from Adafruit IO.
@@ -17,7 +17,7 @@ namespace AdafruitIOApi.Parameters
         ///Include the elevation koordinate(s) of the DataPoint(s).
         Ele = 4,
         ///Include the ID(s) of the DataPoint(s).
-        ID = 8,
+        Id = 8,
         ///Include the Time(s) of creation of the DataPoint(s).
         CreatedAt = 16
     }
@@ -44,7 +44,7 @@ namespace AdafruitIOApi.Parameters
                 value += "lon;";
             if (data.HasFlag(IncludeData.Ele))
                 value += "ele;";
-            if (data.HasFlag(IncludeData.ID))
+            if (data.HasFlag(IncludeData.Id))
                 value += "id;";
             if (data.HasFlag(IncludeData.CreatedAt))
                 value += "created_at;";
