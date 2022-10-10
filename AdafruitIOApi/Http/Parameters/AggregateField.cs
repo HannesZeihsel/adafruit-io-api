@@ -25,23 +25,16 @@
         /// <returns>The converted string.</returns>
         public static string GetDataText(this AggregateField data)
         {
-            switch (data)
+            return data switch
             {
-                case AggregateField.Avg:
-                    return "avg";
-                case AggregateField.Sum:
-                    return "sum";
-                case AggregateField.Val:
-                    return "val";
-                case AggregateField.Min:
-                    return "min";
-                case AggregateField.Max:
-                    return "max";
-                case AggregateField.ValCount:
-                    return "val_count";
-                default:
-                    return string.Empty;
-            }
+                AggregateField.Avg => "avg",
+                AggregateField.Sum => "sum",
+                AggregateField.Val => "val",
+                AggregateField.Min => "min",
+                AggregateField.Max => "max",
+                AggregateField.ValCount => "val_count",
+                _ => string.Empty,
+            };
         }
     }
 }

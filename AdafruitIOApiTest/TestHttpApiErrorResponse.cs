@@ -1,4 +1,5 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using System;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Threading.Tasks;
 using AdafruitIOApi.Http;
 using AdafruitIOApi.Http.Exceptions;
@@ -18,12 +19,12 @@ namespace AdafruitIOApiTest
             //test on various methods 
             //todo add more and more as implemented
 
-            await Assert.ThrowsExceptionAsync<UsernameNotFoundException>(async () =>
+            await Assert.ThrowsExceptionAsync<UnauthorizedException>(async () =>
             {
                 await client.CreateDataAsync(AdafruitIOAccountData.FeedKeyValid, "testData");
             });
 
-            await Assert.ThrowsExceptionAsync<UsernameNotFoundException>(async () =>
+            await Assert.ThrowsExceptionAsync<UnauthorizedException>(async () =>
             {
                 await client.GetDataAsync(AdafruitIOAccountData.FeedKeyValid);
             });
@@ -39,12 +40,12 @@ namespace AdafruitIOApiTest
             //test on various methods 
             //todo add more and more as implemented
 
-            await Assert.ThrowsExceptionAsync<InvalidApiKeyException>(async () =>
+            await Assert.ThrowsExceptionAsync<UnauthorizedException>(async () =>
             {
                 await client.CreateDataAsync(AdafruitIOAccountData.FeedKeyValid, "testData");
             });
 
-            await Assert.ThrowsExceptionAsync<InvalidApiKeyException>(async () =>
+            await Assert.ThrowsExceptionAsync<UnauthorizedException>(async () =>
             {
                 await client.GetDataAsync(AdafruitIOAccountData.FeedKeyValid);
             });
@@ -59,12 +60,12 @@ namespace AdafruitIOApiTest
             //test on various methods 
             //todo add more and more as implemented
 
-            await Assert.ThrowsExceptionAsync<GeneralNotFoundException>(async () =>
+            await Assert.ThrowsExceptionAsync<NotFoundException>(async () =>
             {
                 await client.CreateDataAsync(AdafruitIOAccountData.FeedKeyInvalid, "testData");
             });
 
-            await Assert.ThrowsExceptionAsync<GeneralNotFoundException>(async () =>
+            await Assert.ThrowsExceptionAsync<NotFoundException>(async () =>
             {
                 await client.GetDataAsync(AdafruitIOAccountData.FeedKeyInvalid);
             });
@@ -80,9 +81,15 @@ namespace AdafruitIOApiTest
             //test on various methods 
             //todo add more and more as implemented
 
-            Assert.IsTrue(await client.CreateDataAsync(AdafruitIOAccountData.FeedKeyValid, "testData") != null);
-
-            Assert.IsTrue(await client.GetDataAsync(AdafruitIOAccountData.FeedKeyValid) != null);
+            try
+            {
+                await client.CreateDataAsync(AdafruitIOAccountData.FeedKeyValid, "testData");
+                await client.GetDataAsync(AdafruitIOAccountData.FeedKeyValid);
+            }
+            catch(Exception e)
+            {
+                Assert.Fail($"Triggered error '{e.Message}'");   
+            }
         }
     }
 }

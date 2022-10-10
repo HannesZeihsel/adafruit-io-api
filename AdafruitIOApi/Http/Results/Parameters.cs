@@ -13,6 +13,6 @@ namespace AdafruitIOApi.Http.Results
         public DateTime? EndTime { get; set; }
         public int? Resolution { get; set; }
         public int? Hours { get; set; }
-        public string Field { get; set; }
+        public string? Field { get; set; }
     }
 }
